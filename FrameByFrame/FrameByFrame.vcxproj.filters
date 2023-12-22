@@ -21,9 +21,33 @@
     <ClCompile Include="record_images.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="encode_video.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="threadstream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Queue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Msg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="record_images.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="encode_video.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="threadstream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Msg.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Queue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
