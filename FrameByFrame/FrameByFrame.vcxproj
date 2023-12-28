@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="custom_utils.cpp" />
     <ClCompile Include="encode_video.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Msg.cpp" />
@@ -151,6 +152,7 @@
     <ClCompile Include="threadstream.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="custom_utils.hpp" />
     <ClInclude Include="encode_video.h" />
     <ClInclude Include="Msg.hpp" />
     <ClInclude Include="Queue.hpp" />

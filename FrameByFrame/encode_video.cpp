@@ -1,58 +1,51 @@
 #include "encode_video.h"
+#include "custom_utils.hpp"
 namespace fs = std::filesystem;
-fbf::VideoEncoder::VideoEncoder()
-{
+fbf::VideoEncoder::VideoEncoder(const std::string img_extension, const std::string output_extension,
+	const int fourcc_code) {
+	m_img_extension = img_extension;
+	m_output_extension = output_extension;
+	m_codec = fourcc_code;
 }
 
-template <typename TP>
-time_t to_time_t(TP tp) {
-	using namespace std::chrono;
-	auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now() + system_clock::now());
-	return system_clock::to_time_t(sctp);
-}
-bool fbf::VideoEncoder::begin_encode(PolyM::Queue& q, std::string filepath, int max_intervals)
-{
+bool fbf::VideoEncoder::begin_encode(PolyM::Queue& shared_queue, std::string filepath, int max_intervals){
 	namespace fs = std::filesystem;
-	int m_file_index = 0;
-	const std::string img_extension = ".bmp";
-	const std::string output_extenstion = ".mkv";
-	const int codec = cv::VideoWriter::fourcc('H', '2', '6', '4');
-	q.get();
-	while (m_file_index < 10) {
+	cv::VideoWriter output_video;
+	int interval_count = 0;
+	int file_index = 0;
+	utils::Profiler encoder_profiler;
+	while (file_index < max_intervals) {
+		auto msg = shared_queue.get();
+		const auto& dm = dynamic_cast<PolyM::DataMsg<int>&>(*msg);
+		const int fps = dm.getMsgId();	// The fps is sent as the MsgId so as not to waste space
+		//std::cout << "fps: " << fps << '\n';
+		encoder_profiler.begin_timer();
 		std::map<fs::file_time_type, fs::directory_entry> sort_by_time;
-		const std::string subfolder = filepath + std::to_string(m_file_index) + '/';
-		const std::string output_name = subfolder + std::to_string(m_file_index) + output_extenstion;
-		std::vector<cv::Mat> images;
+		const std::string subfolder = filepath + std::to_string(file_index) + '/';
+		const std::string output_name = subfolder + std::to_string(file_index) + m_output_extension;
 		for (const auto& entry : fs::directory_iterator(subfolder)) {
 			const auto filenameStr = entry.path().filename().string();
-			
 			if (entry.is_directory()) {
 				ThreadStream(std::cout) << "dir: " << filenameStr << '\n';
 			}
 			else if (entry.is_regular_file()) {
 				const std::string name_plus_path = subfolder + filenameStr;
-				if (entry.path().extension() == img_extension) {
-					auto file_time = entry.last_write_time();
-
-					sort_by_time.insert(std::make_pair(file_time, entry));
+				if (entry.path().extension() == m_img_extension) {
+					sort_by_time.insert(std::make_pair(entry.last_write_time(), entry));
 				}
 			}
 			else {
 				ThreadStream(std::cout) << "??   " << filenameStr << '\n';
 			}
 		}
-
-		cv::VideoWriter output_video;
 		bool size_set = false;
 		cv::Size image_size;
-		
-		for (const auto& p : sort_by_time)
+		for (const auto& p : sort_by_time) 
 		{
-			cv::Mat img;
-			img = cv::imread(p.second.path().generic_string());
+			const cv::Mat img = cv::imread(p.second.path().generic_string());
 			if (!size_set) {
 				image_size = img.size();
-				output_video.open(output_name, codec, 30, image_size);
+				output_video.open(output_name, m_codec, fps, image_size);
 				if (!output_video.isOpened()) {
 					std::cout << "Could not open the output video for write: " << '\n';
 					return -1;
@@ -60,11 +53,9 @@ bool fbf::VideoEncoder::begin_encode(PolyM::Queue& q, std::string filepath, int 
 				size_set = true;
 			}
 			output_video << img;
-			std::cout << p.second << std::endl;
 		}
-		if (m_file_index != 9) q.get();
-		++m_file_index;
+		ThreadStream(std::cout) << "Encode time = " << encoder_profiler.end_timer().count() << '\n';
+		++file_index;
 	}
-	
 	return false;
 }
