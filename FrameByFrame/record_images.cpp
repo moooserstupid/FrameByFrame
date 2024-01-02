@@ -1,4 +1,5 @@
 #include "record_images.h"
+
 fbf::ImageWriter::ImageWriter(const int source, const std::string format, const NamingConvention naming_convention,
 	const bool show_capture, const bool is_capture_strict) {
 	m_cap = cv::VideoCapture(source);
@@ -6,10 +7,10 @@ fbf::ImageWriter::ImageWriter(const int source, const std::string format, const 
 	m_naming_convention = naming_convention;
 	m_show_capture = show_capture;
 	m_is_capture_strict = is_capture_strict;
+	//cv::namedWindow();
 }
 bool fbf::ImageWriter::begin_write(PolyM::Queue& shared_queue, std::string filepath, int max_intervals, 
 	std::chrono::milliseconds max_interval_duration, std::string prefix) {
-	
 	int frame_count = 0;
 	int iterator_name_count = 0;
 	int file_index = 0;
@@ -78,11 +79,9 @@ bool fbf::ImageWriter::begin_write(PolyM::Queue& shared_queue, std::string filep
 			auto interval_timer = std::chrono::duration_cast<std::chrono::milliseconds> (current_time - interval_start_time);
 			if (interval_timer > max_interval_duration) {
 				auto interval_timer = std::chrono::duration_cast<std::chrono::seconds> (current_time - interval_start_time);
-				const int fps = frame_count / interval_timer.count();
-				std::cout << "FPS = " << fps << '\n';
-				shared_queue.put(PolyM::DataMsg<int>(fps));	// The fps is sent as the MsgId so as not to waste space
+				const double fps = (double) frame_count / interval_timer.count();
+				shared_queue.put(PolyM::DataMsg<double>(fps));	// The fps is sent as the MsgId so as not to waste space
 				++file_index;
-
 				if (file_index < max_intervals) {
 					frame_count = 0;
 					interval_start_time = current_time;
@@ -98,7 +97,6 @@ bool fbf::ImageWriter::begin_write(PolyM::Queue& shared_queue, std::string filep
 			break;
 		}
 	}
-	std::cout << "Finished first thread. " << '\n';
 	return true;
 }
 

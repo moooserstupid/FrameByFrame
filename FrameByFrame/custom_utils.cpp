@@ -1,15 +1,22 @@
 #include "custom_utils.hpp"
 
-utils::Profiler::Profiler()
+utils::Profiler::Profiler(const char* name) 
+	: m_Name(name), m_Stopped(false)
 {
+	m_StartTimePoint = std::chrono::steady_clock::now();
 }
 
-void utils::Profiler::begin_timer()
+utils::Profiler::~Profiler()
 {
-	start_time = std::chrono::steady_clock::now();
+	Stop();
 }
 
-std::chrono::milliseconds utils::Profiler::end_timer()
+void utils::Profiler::Stop()
 {
-	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time);
+	auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimePoint).time_since_epoch().count();
+	auto end = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()).time_since_epoch().count();
+	auto duration = end - start;
+	double ms = duration * 0.001;
+	std::cout << m_Name << ": " << duration << "us (" << ms << "ms)" << '\n';
+	m_Stopped = true;
 }

@@ -5,6 +5,7 @@
 #include <time.h>
 #include <filesystem>
 #include "opencv2/opencv.hpp"
+#include <opencv2/core/utils/logger.hpp>
 #include "threadstream.h"
 #include "Queue.hpp"
 
@@ -20,7 +21,6 @@ namespace fbf {
 			const bool show_capture, const bool is_capture_strict);
 		bool begin_write(PolyM::Queue& shared_queue, std::string filepath, 
 			int max_intervals, std::chrono::milliseconds max_interval_duration, std::string prefix = "");
-		
 		bool end_write();
 	private:
 		cv::VideoCapture m_cap;

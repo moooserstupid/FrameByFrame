@@ -1,13 +1,16 @@
 #pragma once
+#include <iostream>
 #include <chrono>
 
 namespace utils {
 	class Profiler {
 	public:
-		Profiler();
-		void begin_timer();
-		std::chrono::milliseconds end_timer();
+		Profiler(const char* name);
+		~Profiler();
+		void Stop();
 	private:
-		std::chrono::steady_clock::time_point start_time;
+		std::chrono::time_point<std::chrono::steady_clock> m_StartTimePoint;
+		const char* m_Name;
+		bool m_Stopped;
 	};
 }
